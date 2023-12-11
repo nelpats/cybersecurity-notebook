@@ -1,0 +1,13 @@
+[package]
+name = "chrome-password-decryption"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde_json = "1.0"
+whoami = "1.0.3"
+sqlite = "0.32.0"
+substring = "1.4.5"
+aes-gcm = { version = "0.10.3", features = [] }
