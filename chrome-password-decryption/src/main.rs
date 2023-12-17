@@ -31,11 +31,8 @@ fn retrieve_secret_key() -> String {
         let key = json_content["os_crypt"]["encrypted_key"].to_string();
         println!("{}", key);
 
-        let base64_string = String::from_utf8(windows1252_to_utf8(key)).expect("Cannot build UTF-8");
-        println!("{}", base64_string);
-
         // fix the base64 decoding
-        return String::from_utf8(general_purpose::STANDARD_NO_PAD.decode( base64_string).unwrap()).expect("Cannot decode key.");
+        return String::from_utf8(general_purpose::STANDARD_NO_PAD.decode( key).unwrap()).expect("Cannot decode key.");
     }
     println!("Unable to find the secret key.");
     exit(1);
