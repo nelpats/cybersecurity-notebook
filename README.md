@@ -3,7 +3,7 @@
  This repository contains cybersecurity related projects I made, below is a non-exahaustive list of other projects on the same subject.
 
  - [Simple stack-based Virtual Machine](https://github.com/nelpats/ARVM)
- - [Python Bytecode Encryptio/Virtualization](https://github.com/nelpats/MartyVM)
+ - [Python Bytecode Encryption/Virtualization](https://github.com/nelpats/MartyVM)
  - [Minecraft fraud detection](https://github.com/nelpats/Sleuth)
  - [Hooking the Requests module in Python](https://github.com/nelpats/Fibula)
  - [Rage Deobfuscator](https://github.com/nelpats/Rage)
